@@ -7,6 +7,7 @@ import ChatInput from '@/components/ChatInput';
 import ChatSidebar from '@/components/ChatSidebar';
 import { Message } from '@/types/chat';
 import ActivityFeed from '@/components/ActivityFeed';
+import Drawer from '@/components/Drawer';
 
 interface Conversation {
   id: string;
@@ -153,7 +154,7 @@ export default function Home() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <div className="w-64 h-full bg-sidebar-bg">
+      <Drawer>
         <ChatSidebar
           conversations={conversations.map(conv => ({
             id: conv.id,
@@ -165,10 +166,11 @@ export default function Home() {
           onNew={handleNewChat}
           onDelete={handleDeleteChat}
         />
-      </div>
-      <main className="flex-1 relative bg-chat-bg">
-        <div className="absolute inset-0 overflow-y-auto">
-          <div className="pb-32">
+      </Drawer>
+
+      <main className="flex-1 flex flex-col bg-chat-bg dark:bg-chat-bg-dark">
+        <div className="flex-1 overflow-y-auto bg-chat-bg dark:bg-chat-bg-dark">
+          <div className="max-w-3xl mx-auto px-0">
             {currentMessages.map((message: Message) => (
               <ChatMessage 
                 key={message.id} 
@@ -177,7 +179,7 @@ export default function Home() {
               />
             ))}
             {currentMessages.length === 0 && (
-              <div className="h-[calc(100vh-128px)] flex items-center justify-center">
+              <div className="flex-1 flex items-center justify-center min-h-[500px] py-6">
                 <p className="text-gray-400 text-center">
                   Start a conversation by typing a message below.
                 </p>
@@ -185,7 +187,9 @@ export default function Home() {
             )}
           </div>
         </div>
-        <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+        <div className="bg-white dark:bg-chat-bg-dark border-t border-gray-200 dark:border-gray-600/20 rounded-lg shadow-sm">
+          <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+        </div>
       </main>
       <ActivityFeed />
     </div>

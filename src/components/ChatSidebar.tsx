@@ -46,7 +46,7 @@ export default function ChatSidebar({ conversations, activeId, onSelect, onNew, 
 
   return (
     <div className="h-full flex flex-col p-2" onClick={handleClickOutside}>
-      <div className="flex items-center justify-between px-2 py-4 mb-2">
+      <div className="flex items-center justify-between px-2 py-4 mb-2 mt-4">
         <div className="flex items-center gap-2">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-500">
             <SparklesIcon className="w-5 h-5 text-white" />

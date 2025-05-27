@@ -9,22 +9,14 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'chat-bg': {
-          light: '#ffffff',
-          dark: '#343541',
-        },
-        'sidebar-bg': {
-          light: '#f7f7f8',
-          dark: '#202123',
-        },
-        'user-message': {
-          light: '#ffffff',
-          dark: '#343541',
-        },
-        'assistant-message': {
-          light: '#f7f7f8',
-          dark: '#444654',
-        },
+        'chat-bg': '#F7F7F8',
+        'chat-bg-dark': '#1E1E1E',
+        'user-message-light': '#F7F7F8',
+        'user-message-dark': '#1E1E1E',
+        'assistant-message-light': '#FFFFFF',
+        'assistant-message-dark': '#2D2D2D',
+        'sidebar-bg': '#FFFFFF',
+        'sidebar-bg-dark': '#161616',
       },
     },
   },
