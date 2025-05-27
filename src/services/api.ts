@@ -9,16 +9,17 @@ interface ChatResponse {
 
 export async function sendChatMessage(messages: Message[]): Promise<ChatResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/chat`, {
+    const latestMessage = messages[messages.length - 1];
+    console.log("Data:: ", latestMessage?.content || "");
+
+    const response = await fetch(`${API_BASE_URL}/chatbot/query`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        messages: messages.map(msg => ({
-          role: msg.role,
-          content: msg.content,
-        }))
+        topK: 2,
+        query: latestMessage?.content || ""
       }),
     });
 
@@ -28,7 +29,12 @@ export async function sendChatMessage(messages: Message[]): Promise<ChatResponse
     }
 
     const data = await response.json();
-    return data;
+
+    const result: ChatResponse = {
+      content: data.message
+    };
+
+    return result;
   } catch (error) {
     console.error('API Error:', error);
     throw error;
