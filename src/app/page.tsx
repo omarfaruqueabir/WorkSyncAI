@@ -8,6 +8,7 @@ import ChatSidebar from '@/components/ChatSidebar';
 import { Message } from '@/types/chat';
 import ActivityFeed from '@/components/ActivityFeed';
 import Drawer from '@/components/Drawer';
+import { sendChatMessage } from '@/services/api';
 
 interface Conversation {
   id: string;
@@ -88,19 +89,15 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Send message to backend
+      const response = await sendChatMessage([...currentMessages, userMessage]);
       
-      const mockResponse = {
-        content: "This is a mock response. Please replace with actual API integration.",
-      };
-
       // Replace loading message with actual response
       const updatedMessages = newMessages.map(msg => 
         msg.id === loadingMessage.id
           ? {
               ...msg,
-              content: mockResponse.content,
+              content: response.content,
             }
           : msg
       );
