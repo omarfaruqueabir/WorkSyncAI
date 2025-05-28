@@ -3,8 +3,8 @@ import { UserIcon } from '@heroicons/react/24/solid';
 import LoadingDots from './LoadingDots';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import Mermaid from 'mermaid-react';
-import { useEffect, useState } from 'react';
+import mermaid from 'mermaid';
+import { useEffect, useState, useRef } from 'react';
 
 interface ChatMessageProps {
   message: Message;
@@ -15,7 +15,17 @@ export default function ChatMessage({ message, isLoading = false }: ChatMessageP
   const isUser = message.role === 'user';
   const showLoading = !isUser && !message.content;
   const [mermaidCharts, setMermaidCharts] = useState<string[]>([]);
+  const mermaidRefs = useRef<(HTMLDivElement | null)[]>([]);
   
+  useEffect(() => {
+    // Initialize mermaid
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'default',
+      securityLevel: 'loose',
+    });
+  }, []);
+
   useEffect(() => {
     if (!isUser && message.content) {
       // Extract Mermaid diagrams from the message
@@ -30,6 +40,33 @@ export default function ChatMessage({ message, isLoading = false }: ChatMessageP
       setMermaidCharts(charts);
     }
   }, [message.content, isUser]);
+
+  useEffect(() => {
+    // Render Mermaid diagrams
+    mermaidRefs.current.forEach((ref, index) => {
+      if (ref && mermaidCharts[index]) {
+        try {
+          mermaid.render(`mermaid-${message.id}-${index}`, mermaidCharts[index])
+            .then(({ svg }) => {
+              if (ref) {
+                ref.innerHTML = svg;
+              }
+            })
+            .catch(error => {
+              console.error('Mermaid rendering error:', error);
+              if (ref) {
+                ref.innerHTML = '<p class="text-red-500">Error rendering diagram</p>';
+              }
+            });
+        } catch (error) {
+          console.error('Mermaid error:', error);
+          if (ref) {
+            ref.innerHTML = '<p class="text-red-500">Error rendering diagram</p>';
+          }
+        }
+      }
+    });
+  }, [mermaidCharts, message.id]);
 
   const renderContent = () => {
     if (showLoading) {
@@ -46,17 +83,20 @@ export default function ChatMessage({ message, isLoading = false }: ChatMessageP
 
     return (
       <div className="space-y-4">
-        <ReactMarkdown 
-          remarkPlugins={[remarkGfm]}
-          className="prose dark:prose-invert max-w-none"
-        >
-          {contentWithoutMermaid}
-        </ReactMarkdown>
+        <div className="prose dark:prose-invert max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {contentWithoutMermaid}
+          </ReactMarkdown>
+        </div>
         
-        {mermaidCharts.map((chart, index) => (
-          <div key={index} className="my-4 bg-white dark:bg-gray-800 p-4 rounded-lg">
-            <Mermaid chart={chart} />
-          </div>
+        {mermaidCharts.map((_, index) => (
+          <div
+            key={index}
+            ref={(el) => {
+              mermaidRefs.current[index] = el;
+            }}
+            className="my-4 bg-white dark:bg-gray-800 p-4 rounded-lg overflow-auto"
+          />
         ))}
       </div>
     );
