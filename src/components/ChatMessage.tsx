@@ -1,6 +1,10 @@
 import { Message } from '@/types/chat';
 import { UserIcon } from '@heroicons/react/24/solid';
 import LoadingDots from './LoadingDots';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import Mermaid from 'mermaid-react';
+import { useEffect, useState } from 'react';
 
 interface ChatMessageProps {
   message: Message;
@@ -10,6 +14,53 @@ interface ChatMessageProps {
 export default function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
   const isUser = message.role === 'user';
   const showLoading = !isUser && !message.content;
+  const [mermaidCharts, setMermaidCharts] = useState<string[]>([]);
+  
+  useEffect(() => {
+    if (!isUser && message.content) {
+      // Extract Mermaid diagrams from the message
+      const regex = /```mermaid\n([\s\S]*?)```/g;
+      const charts: string[] = [];
+      let match;
+      
+      while ((match = regex.exec(message.content)) !== null) {
+        charts.push(match[1].trim());
+      }
+      
+      setMermaidCharts(charts);
+    }
+  }, [message.content, isUser]);
+
+  const renderContent = () => {
+    if (showLoading) {
+      return <LoadingDots />;
+    }
+
+    // For user messages, just show plain text
+    if (isUser) {
+      return <p className="text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{message.content}</p>;
+    }
+
+    // For AI messages, render markdown and handle Mermaid diagrams
+    const contentWithoutMermaid = message.content.replace(/```mermaid\n[\s\S]*?```/g, '');
+
+    return (
+      <div className="space-y-4">
+        <ReactMarkdown 
+          remarkPlugins={[remarkGfm]}
+          className="prose dark:prose-invert max-w-none"
+        >
+          {contentWithoutMermaid}
+        </ReactMarkdown>
+        
+        {mermaidCharts.map((chart, index) => (
+          <div key={index} className="my-4 bg-white dark:bg-gray-800 p-4 rounded-lg">
+            <Mermaid chart={chart} />
+          </div>
+        ))}
+      </div>
+    );
+  };
   
   return (
     <div className={`py-6 rounded-lg ${
@@ -31,11 +82,7 @@ export default function ChatMessage({ message, isLoading = false }: ChatMessageP
             )}
           </div>
           <div className="flex-1 min-w-0">
-            {showLoading ? (
-              <LoadingDots />
-            ) : (
-              <p className="text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{message.content}</p>
-            )}
+            {renderContent()}
           </div>
         </div>
       </div>
